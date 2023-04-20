@@ -13,6 +13,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.step.builder.SimpleStepBuilder;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
 import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.support.MySqlPagingQueryProvider;
@@ -47,21 +48,34 @@ public class SpringBatchConfig {
         JdbcPagingItemReader<Student> pagingItemReader = new JdbcPagingItemReader<>();
 
         pagingItemReader.setDataSource(dataSource);
-        pagingItemReader.setFetchSize(20);
+       // pagingItemReader.setFetchSize(20);
         pagingItemReader.setRowMapper(new StudentResultRowMapper());
-        pagingItemReader.setPageSize(1);
+        pagingItemReader.setPageSize(100);
 
         MySqlPagingQueryProvider mySqlPagingQueryProvider = new MySqlPagingQueryProvider();
         mySqlPagingQueryProvider.setSelectClause("id, roll_number, name");
         mySqlPagingQueryProvider.setFromClause("from student");
 
+
         Map<String, Order> orderByName = new HashMap<>();
-        orderByName.put("name", Order.ASCENDING);
+        orderByName.put("id", Order.ASCENDING);
 
         mySqlPagingQueryProvider.setSortKeys(orderByName);
         pagingItemReader.setQueryProvider(mySqlPagingQueryProvider);
 
         return pagingItemReader;
+    }
+
+
+    @Bean
+    public JdbcCursorItemReader<Student> jdbcCursorItemReader() {
+        JdbcCursorItemReader<Student> cursorItemReader = new JdbcCursorItemReader<>();
+        cursorItemReader.setDataSource(dataSource);
+        cursorItemReader.setFetchSize(Integer.MIN_VALUE);
+        cursorItemReader.setRowMapper(new StudentResultRowMapper());
+        cursorItemReader.setVerifyCursorPosition(false);
+        cursorItemReader.setSql("select * from student");
+        return cursorItemReader;
     }
 
     @Bean
@@ -74,7 +88,7 @@ public class SpringBatchConfig {
 
     private DelimitedLineAggregator<Student> getDelimitedLineAggregator() {
         BeanWrapperFieldExtractor<Student> beanWrapperFieldExtractor = new BeanWrapperFieldExtractor<Student>();
-        beanWrapperFieldExtractor.setNames(new String[]{"id", "rollNumber", "name"});
+        beanWrapperFieldExtractor.setNames(new String[]{"id", "rollNumber", "nameOfStudent"});
 
         DelimitedLineAggregator<Student> aggregator = new DelimitedLineAggregator<Student>();
         aggregator.setDelimiter(",");
@@ -86,8 +100,8 @@ public class SpringBatchConfig {
     @Bean
     public Step getDbToCsvStep() {
         StepBuilder stepBuilder = stepBuilderFactory.get("getDbToCsvStep");
-        SimpleStepBuilder<Student, Student> simpleStepBuilder = stepBuilder.chunk(1);
-        return simpleStepBuilder.reader(jdbcPagingItemReader()).processor(processor()).writer(writer()).build();
+        SimpleStepBuilder<Student, Student> simpleStepBuilder = stepBuilder.chunk(10);
+        return simpleStepBuilder.reader(jdbcCursorItemReader()).processor(processor()).writer(writer()).build();
     }
 
     @Bean

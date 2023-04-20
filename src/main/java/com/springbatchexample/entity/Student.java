@@ -2,34 +2,34 @@ package com.springbatchexample.entity;
 
 public class Student {
 
-    private Long id;
-    private String name;
+    private Integer id;
+    private String nameOfStudent;
     private String rollNumber;
 
     public Student() {
 
     }
 
-    public Student(Long id, String name, String rollNumber) {
+    public Student(Integer id, String nameOfStudent, String rollNumber) {
         this.id = id;
-        this.name = name;
+        this.nameOfStudent = nameOfStudent;
         this.rollNumber = rollNumber;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getNameOfStudent() {
+        return nameOfStudent;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNameOfStudent(String nameOfStudent) {
+        this.nameOfStudent = nameOfStudent;
     }
 
     public String getRollNumber() {

@@ -9,12 +9,13 @@ import java.sql.SQLException;
 
 @Component
 public class StudentResultRowMapper implements RowMapper<Student> {
+
     @Override
     public Student mapRow(ResultSet rs, int i) throws SQLException {
         Student student = new Student();
-        student.setId(rs.getLong("id"));
+        student.setId(rs.getInt("id"));
         student.setRollNumber(rs.getString("roll_number"));
-        student.setName(rs.getString("name"));
+        student.setNameOfStudent(rs.getString("nameOfStudent"));
         return student;
     }
 }
